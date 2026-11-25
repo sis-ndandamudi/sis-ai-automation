@@ -1,0 +1,344 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SIS AI Automation</title>
+<style>
+  :root{--navy:#13284a;--blue:#1f6fd1;--ink:#17263a;--muted:#4a5b6e;--line:#d5dfea}
+  *{box-sizing:border-box}
+  body{margin:0;font-family:Inter,"Segoe UI",system-ui,sans-serif;background:#eef3f8;color:var(--ink);font-size:14px;line-height:1.45}
+  header{background:var(--navy);color:#fff;display:flex;flex-wrap:wrap;align-items:center;gap:12px 24px;padding:10px 28px}
+  header img{height:44px;display:block}
+  .brand{display:flex;align-items:center;gap:12px;font-weight:700;font-size:17px;line-height:1.15}
+  nav{display:flex;flex-wrap:wrap;gap:6px;flex:1 1 auto;justify-content:center}
+  nav button{min-height:44px;padding:0 18px;border:0;border-bottom:3px solid transparent;background:transparent;color:#d7e3f4;font-weight:600;font-size:14px;font-family:inherit;cursor:pointer}
+  nav button[aria-current="page"]{background:#1d3d6b;color:#fff;border-bottom-color:#7db8ff;border-radius:8px 8px 0 0}
+  #pill{display:inline-block;padding:7px 16px;border-radius:999px;font-weight:600;background:#e3efff;color:#0b3d91}
+  #pill.live{background:#fee4e2;color:#912018}
+  main{max-width:1400px;margin:0 auto;padding:20px 28px 56px}
+  .crumb{font-size:13px;color:var(--muted);margin-bottom:16px}
+  .panel[hidden]{display:none}
+  .row{display:flex;flex-wrap:wrap;gap:20px;align-items:flex-start}
+  .card{background:#fff;border:1px solid var(--line);border-radius:16px;padding:22px}
+  .left{flex:1 1 400px;max-width:480px;min-width:0}
+  .right{flex:999 1 600px;min-width:0;display:flex;flex-direction:column;gap:20px}
+  .wide{max-width:760px}
+  h1{margin:0;font-size:26px;line-height:1.2}
+  h2{margin:0 0 8px;font-size:18px}
+  p{margin:6px 0}
+  .muted{color:var(--muted)}
+  .small{font-size:12px;color:var(--muted)}
+  label{display:block;font-size:13px;font-weight:700;margin:14px 0 4px}
+  input,textarea{width:100%;border:1px solid #9fb3c8;border-radius:10px;padding:10px 12px;font:inherit;color:var(--ink);background:#fff}
+  textarea{min-height:132px;resize:vertical;line-height:1.5}
+  .dash{border:1.5px dashed #1c7f8a;border-radius:12px;background:#f3fbfc;padding:14px;margin-top:14px}
+  .ctx{display:grid;grid-template-columns:1fr 1fr;gap:10px 16px;background:#f4f7fb;border-radius:12px;padding:14px;margin-top:14px}
+  .ctx dt{font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+  .ctx dd{margin:2px 0 0;font-weight:600}
+  .btns{display:flex;flex-wrap:wrap;gap:10px;margin-top:14px;align-items:center}
+  button.btn{display:inline-flex;align-items:center;gap:8px;min-height:44px;padding:0 18px;border-radius:10px;border:1px solid var(--blue);background:var(--blue);color:#fff;font-weight:600;font-size:14px;font-family:inherit;cursor:pointer}
+  button.alt{background:#fff;color:#0b3d91}
+  button.stop{background:#fff;color:#912018;border-color:#c0392b}
+  button.ok{background:#15803d;border-color:#15803d}
+  button.warn{background:#fff;color:#5c3300;border-color:#8a5a00}
+  button:disabled{opacity:.45;cursor:not-allowed}
+  .head{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:10px;margin-bottom:12px}
+  .badge{display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:999px;font-size:12px;font-weight:700;background:#eef2f6;color:#3d4b5c}
+  .badge.live{background:#fee4e2;color:#912018}
+  .badge.live::before{content:"";width:9px;height:9px;border-radius:50%;background:currentColor}
+  .frame{border:1px solid #b9c7d6;border-radius:12px;overflow:hidden;background:#fff}
+  .bar{display:flex;gap:10px;align-items:center;background:#e4ebf3;padding:8px 12px}
+  .bar .tab{padding:6px 12px;background:#fff;border-radius:8px 8px 0 0;font-size:12px;font-weight:600}
+  .bar .url{flex:1;min-width:0;background:#fff;border:1px solid #c2cfdd;border-radius:999px;padding:6px 14px;font-size:12px;color:#3d4b5c;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+  #viewer{position:relative;min-height:380px;background:#f6f8fb;outline:none}
+  #viewer:focus-visible{box-shadow:inset 0 0 0 3px rgba(31,111,209,.45)}
+  #stage{display:block;width:100%;height:auto}
+  #empty{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;text-align:center;padding:24px;color:var(--muted)}
+  .approve{background:#fff8e8;border:1.5px solid #e0a93b;border-radius:16px;padding:22px;color:#5c3300}
+  .approve table{border-collapse:collapse;width:100%;min-width:420px;background:#fff;border-radius:10px;overflow:hidden}
+  .approve th{background:#f4ead2;text-align:left;font-size:12px;letter-spacing:.05em;text-transform:uppercase;padding:10px 14px}
+  .approve td{padding:12px 14px;border-top:1px solid #efe3c4;color:var(--ink)}
+  .scroll{overflow-x:auto}
+  ol.feed{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px}
+  ol.feed li{display:flex;gap:10px;padding:8px 10px;border-radius:8px;background:#f7f9fc}
+  ol.feed li:last-child{background:#e3efff;font-weight:600}
+  ol.feed time{flex:none;width:72px;font-size:12px;color:var(--muted)}
+  ul.hist{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:10px}
+  ul.hist li{border:1px solid #dde5ee;border-radius:12px;padding:12px 14px}
+  .empty{color:var(--muted);padding:6px 0}
+  @media (max-width:720px){.ctx{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<header>
+  <div class="brand">
+    <img src="sis-logo.png" alt="SIS" onerror="this.style.display='none'">
+    <div>AI<br>Automation</div>
+  </div>
+  <nav aria-label="Main">
+    <button type="button" data-tab="automate">Automate</button>
+    <button type="button" data-tab="plan">Plan</button>
+    <button type="button" data-tab="activity">Activity</button>
+    <button type="button" data-tab="results">Results</button>
+    <button type="button" data-tab="ask">Ask AI</button>
+    <button type="button" data-tab="history">History</button>
+  </nav>
+  <span id="pill">Not started</span>
+</header>
+
+<main>
+  <div class="crumb">Automation &nbsp;&rsaquo;&nbsp; <strong id="crumb">New instruction</strong></div>
+
+  <!-- FRONT PAGE: prompt + live browser + approval -->
+  <div class="panel" id="tab-automate">
+    <div class="row">
+      <section class="card left" aria-labelledby="h-prompt">
+        <h1 id="h-prompt">Tell the AI what to do</h1>
+        <p class="muted">Describe the task in plain English. There are no templates: the AI reads the live SIS screen and works out the navigation itself.</p>
+        <dl class="ctx">
+          <div><dt>Environment</dt><dd>Dev &middot; sischartsdevgem</dd></div>
+          <div><dt>Session</dt><dd>Signed in by you</dd></div>
+          <div style="grid-column:1/-1"><dt>Login location and facility</dt><dd>Read from the open session, never assumed</dd></div>
+        </dl>
+        <label for="user">Your name</label>
+        <input id="user" placeholder="e.g. naga" autocomplete="off" maxlength="32">
+        <div class="dash">
+          <label for="prompt" style="margin-top:0">What should the AI do?</label>
+          <textarea id="prompt" placeholder="Example: Open Facility Management, find the test facility I name, and change its contact phone. Show me the change and ask before you save."></textarea>
+          <p class="small">Plain instructions only. Never type passwords or patient identifiers you do not need.</p>
+        </div>
+        <div class="btns">
+          <button type="button" class="btn" id="plan">Create plan</button>
+          <button type="button" class="btn alt" id="open">Open SIS login</button>
+        </div>
+        <p class="small">You sign in yourself in the live browser. Credentials are never stored by this app.</p>
+        <p class="small" id="msg" role="status"></p>
+      </section>
+
+      <div class="right">
+        <section class="card" aria-labelledby="h-live">
+          <div class="head">
+            <h2 id="h-live" style="margin:0;font-size:20px">Live SIS browser</h2>
+            <div style="display:flex;gap:8px;flex-wrap:wrap">
+              <span class="badge" id="liveBadge">NOT STARTED</span>
+              <span class="badge" id="recBadge">Recording starts on open</span>
+            </div>
+          </div>
+          <div class="frame">
+            <div class="bar"><span class="tab">SIS</span><div class="url" id="urlBar">sischartsdevgem.amkaicloud.com</div></div>
+            <div id="viewer" tabindex="0" aria-label="Live SIS browser. Click here, then type to use it.">
+              <img id="stage" alt="Live SIS browser" hidden>
+              <div id="empty">Press &ldquo;Open SIS login&rdquo;. The real browser appears here. Click inside it, then type to sign in.</div>
+            </div>
+          </div>
+          <p class="small">This is the real browser the server controls. The same session is recorded as video. Click inside it to give it keyboard focus; click outside to leave.</p>
+          <div class="btns" style="border-top:1px solid #e1e8f0;padding-top:14px">
+            <button type="button" class="btn" disabled title="Added when the AI agent is built (Phase 2 to 4)">Start</button>
+            <button type="button" class="btn warn" disabled title="Added in Phase 4">Pause</button>
+            <button type="button" class="btn alt" disabled title="Added in Phase 4">Resume</button>
+            <button type="button" class="btn stop" id="stop">Stop and save video</button>
+            <button type="button" class="btn alt" id="shot">Take screenshot</button>
+            <button type="button" class="btn alt" id="askBtn">Ask AI</button>
+          </div>
+        </section>
+
+        <section class="approve" id="approval" hidden aria-labelledby="h-approve">
+          <h2 id="h-approve" style="color:#5c3300">Your approval is needed before saving</h2>
+          <p>The AI has read the record and stopped. Nothing has been changed yet.</p>
+          <div class="scroll">
+            <table>
+              <thead><tr><th>Field</th><th>Now on screen</th><th>Will change to</th></tr></thead>
+              <tbody><tr><td id="apField"></td><td id="apNow"></td><td id="apNext" style="font-weight:700"></td></tr></tbody>
+            </table>
+          </div>
+          <p class="small" style="color:#5c3300">Not touched: every other field on this record. The change is saved once and never re-submitted automatically.</p>
+          <div class="btns">
+            <button type="button" class="btn ok" id="approve">Approve and save</button>
+            <button type="button" class="btn warn" id="reject">Do not change anything</button>
+          </div>
+        </section>
+      </div>
+    </div>
+  </div>
+
+  <!-- TABS -->
+  <div class="panel" id="tab-plan" hidden>
+    <section class="card wide">
+      <h2>AI execution plan</h2>
+      <p class="muted">Your prompt:</p>
+      <p id="planPrompt" style="white-space:pre-wrap;font-weight:600"></p>
+      <p class="empty">Plan generation (steps, mandatory fields, ambiguities) is added in Phase 2. Your prompt is saved in History.</p>
+      <div class="btns"><button type="button" class="btn" data-go="automate">Back to live view</button></div>
+    </section>
+  </div>
+
+  <div class="panel" id="tab-activity" hidden>
+    <section class="card wide">
+      <h2>Execution activity</h2>
+      <ol class="feed" id="feed"></ol>
+      <p class="empty" id="feedEmpty">No activity yet.</p>
+    </section>
+  </div>
+
+  <div class="panel" id="tab-results" hidden>
+    <section class="card wide">
+      <h2>Validation results</h2>
+      <p class="muted">A saved form is not a verified change. Expected vs actual values and screenshots appear here once AI runs exist (Phase 6).</p>
+      <p class="empty">No validations yet.</p>
+    </section>
+  </div>
+
+  <div class="panel" id="tab-ask" hidden>
+    <section class="card wide">
+      <h2>Ask the AI</h2>
+      <p class="muted">Questions and instructions during a run are added in Phase 4.</p>
+      <label for="askInput">Your message</label>
+      <input id="askInput" disabled>
+      <div class="btns"><button type="button" class="btn" disabled>Send</button></div>
+    </section>
+  </div>
+
+  <div class="panel" id="tab-history" hidden>
+    <section class="card wide">
+      <div class="head"><h2 style="margin:0">Execution history</h2><button type="button" class="btn alt" id="clearHist">Clear</button></div>
+      <p class="small">Prompts saved in this browser. Run history, reports, videos and screenshots move to SQL Server later.</p>
+      <ul class="hist" id="hist"></ul>
+      <p class="empty" id="histEmpty">Nothing saved yet.</p>
+    </section>
+  </div>
+</main>
+
+<script>
+const $ = (id) => document.getElementById(id);
+const stage = $('stage'), viewer = $('viewer');
+let ws = null, view = { width: 1280, height: 720 }, lastUrl = null;
+
+/* ---------- tabs ---------- */
+const CRUMBS = { automate: 'New instruction', plan: 'AI execution plan', activity: 'Execution activity', results: 'Validation results', ask: 'Ask the AI', history: 'Execution history' };
+function show(name) {
+  if (!CRUMBS[name]) name = 'automate';
+  document.querySelectorAll('nav button').forEach((b) => b.setAttribute('aria-current', b.dataset.tab === name ? 'page' : 'false'));
+  document.querySelectorAll('.panel').forEach((p) => { p.hidden = p.id !== 'tab-' + name; });
+  $('crumb').textContent = CRUMBS[name];
+  history.replaceState(null, '', '#' + name);
+}
+document.querySelectorAll('nav button').forEach((b) => (b.onclick = () => show(b.dataset.tab)));
+document.querySelectorAll('[data-go]').forEach((b) => (b.onclick = () => show(b.dataset.go)));
+$('askBtn').onclick = () => show('ask');
+
+/* ---------- activity feed (real events only) ---------- */
+function logActivity(text) {
+  const li = document.createElement('li');
+  const t = document.createElement('time');
+  t.textContent = new Date().toLocaleTimeString();
+  const s = document.createElement('span');
+  s.textContent = text;
+  li.append(t, s);
+  $('feed').appendChild(li);
+  $('feedEmpty').hidden = true;
+}
+
+/* ---------- history (browser-local for now) ---------- */
+const HKEY = 'sisPromptHistory';
+const loadHist = () => { try { return JSON.parse(localStorage.getItem(HKEY) || '[]'); } catch { return []; } };
+function renderHist() {
+  const list = loadHist();
+  const ul = $('hist'); ul.textContent = '';
+  list.slice().reverse().forEach((h) => {
+    const li = document.createElement('li');
+    const p = document.createElement('div'); p.style.fontWeight = '600'; p.textContent = h.prompt;
+    const w = document.createElement('div'); w.className = 'small'; w.textContent = h.when;
+    li.append(p, w); ul.appendChild(li);
+  });
+  $('histEmpty').hidden = list.length > 0;
+}
+$('clearHist').onclick = () => { localStorage.removeItem(HKEY); renderHist(); };
+$('plan').onclick = () => {
+  const text = $('prompt').value.trim();
+  if (!text) { $('msg').textContent = 'Type what you want the AI to do first.'; return; }
+  const list = loadHist(); list.push({ prompt: text, when: new Date().toLocaleString() });
+  localStorage.setItem(HKEY, JSON.stringify(list.slice(-50)));
+  $('planPrompt').textContent = text;
+  renderHist(); logActivity('Prompt saved.'); show('plan');
+};
+
+/* ---------- connection to the server ---------- */
+const send = (o) => { if (ws && ws.readyState === 1) ws.send(JSON.stringify(o)); };
+
+function setState(state) {
+  const live = state === 'running';
+  $('pill').className = live ? 'live' : '';
+  $('pill').textContent = live ? 'LIVE' : state === 'stopped' ? 'Stopped \u00b7 video saved' : 'Not started';
+  $('liveBadge').className = 'badge' + (live ? ' live' : '');
+  $('liveBadge').textContent = live ? 'LIVE' : state === 'stopped' ? 'ENDED' : 'NOT STARTED';
+  $('recBadge').textContent = live ? 'Recording' : state === 'stopped' ? 'Recording saved' : 'Recording starts on open';
+  if (!live) { stage.hidden = true; $('empty').hidden = false; }
+}
+
+function showApproval(a) {
+  $('apField').textContent = a.field; $('apNow').textContent = a.current; $('apNext').textContent = a.next;
+  $('approval').hidden = false;
+  logActivity('Waiting for your approval: ' + a.field);
+}
+$('approve').onclick = () => { send({ type: 'approve' }); $('approval').hidden = true; logActivity('You approved the change.'); };
+$('reject').onclick = () => { send({ type: 'reject' }); $('approval').hidden = true; logActivity('You rejected the change.'); };
+
+function onMessage(e) {
+  if (typeof e.data !== 'string') {
+    const url = URL.createObjectURL(e.data);
+    stage.src = url;
+    if (lastUrl) URL.revokeObjectURL(lastUrl);
+    lastUrl = url;
+    stage.hidden = false; $('empty').hidden = true;
+    return;
+  }
+  const m = JSON.parse(e.data);
+  if (m.type === 'hello') view = m.viewport;
+  if (m.type === 'status') { setState(m.state); if (m.state === 'running') logActivity('Browser is running.'); if (m.state === 'stopped') logActivity('Stopped. Video saved on the server.'); }
+  if (m.type === 'error') { $('msg').textContent = 'Error: ' + m.message; logActivity('Error: ' + m.message); }
+  if (m.type === 'screenshot') { $('msg').textContent = 'Screenshot saved: ' + m.file; logActivity('Screenshot saved: ' + m.file); }
+  if (m.type === 'approval') showApproval(m);
+}
+
+function connect() {
+  return new Promise((resolve, reject) => {
+    const user = $('user').value.trim();
+    if (!user) { $('msg').textContent = 'Enter your name first.'; return reject(new Error('name')); }
+    localStorage.setItem('sisUser', user);
+    if (ws && ws.readyState === 1) return resolve();
+    const proto = location.protocol === 'https:' ? 'wss' : 'ws';
+    ws = new WebSocket(proto + '://' + location.host + '/ws?user=' + encodeURIComponent(user));
+    ws.onopen = () => resolve();
+    ws.onerror = () => reject(new Error('connect'));
+    ws.onclose = () => setState('idle');
+    ws.onmessage = onMessage;
+  });
+}
+
+$('open').onclick = () => connect().then(() => { send({ type: 'start' }); logActivity('Opening SIS login.'); }).catch(() => {});
+$('shot').onclick = () => send({ type: 'screenshot' });
+$('stop').onclick = () => send({ type: 'stop' });
+
+/* ---------- mouse and keyboard into the real browser ---------- */
+stage.addEventListener('click', (ev) => {
+  viewer.focus();
+  const r = stage.getBoundingClientRect();
+  send({ type: 'click', x: Math.round((ev.clientX - r.left) * view.width / r.width), y: Math.round((ev.clientY - r.top) * view.height / r.height) });
+});
+viewer.addEventListener('wheel', (ev) => { ev.preventDefault(); send({ type: 'wheel', dy: ev.deltaY }); }, { passive: false });
+viewer.addEventListener('keydown', (ev) => {
+  if (ev.ctrlKey || ev.metaKey || ev.altKey) return;
+  ev.preventDefault();
+  if (ev.key.length === 1) send({ type: 'type', text: ev.key });
+  else send({ type: 'press', key: ev.key });
+});
+
+/* ---------- start-up ---------- */
+const saved = localStorage.getItem('sisUser');
+if (saved) { $('user').value = saved; connect().catch(() => {}); }
+renderHist();
+show((location.hash || '#automate').slice(1));
+</script>
+</body>
+</html>
